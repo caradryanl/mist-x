@@ -1752,39 +1752,6 @@ def main(args):
             if global_step >= args.max_train_steps:
                 break
 
-        if accelerator.is_main_process:
-            if args.validation_prompt is not None and epoch % args.validation_epochs == 0:
-                if not args.train_text_encoder:
-                    # create pipeline
-                    text_encoder_one, text_encoder_two, text_encoder_three = load_text_encoders(
-                        text_encoder_cls_one, text_encoder_cls_two, text_encoder_cls_three
-                    )
-                    text_encoder_one.to(weight_dtype)
-                    text_encoder_two.to(weight_dtype)
-                pipeline = StableDiffusion3Pipeline.from_pretrained(
-                    args.pretrained_model_name_or_path,
-                    vae=vae,
-                    text_encoder=accelerator.unwrap_model(text_encoder_one),
-                    text_encoder_2=accelerator.unwrap_model(text_encoder_two),
-                    text_encoder_3=accelerator.unwrap_model(text_encoder_three),
-                    transformer=accelerator.unwrap_model(transformer),
-                    revision=args.revision,
-                    variant=args.variant,
-                    torch_dtype=weight_dtype,
-                )
-                pipeline_args = {"prompt": args.validation_prompt}
-                images = log_validation(
-                    pipeline=pipeline,
-                    args=args,
-                    accelerator=accelerator,
-                    pipeline_args=pipeline_args,
-                    epoch=epoch,
-                    torch_dtype=weight_dtype,
-                )
-                if not args.train_text_encoder:
-                    del text_encoder_one, text_encoder_two, text_encoder_three
-                    free_memory()
-
     # Save the lora layers
     accelerator.wait_for_everyone()
     if accelerator.is_main_process:
