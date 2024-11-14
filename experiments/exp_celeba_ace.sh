@@ -87,6 +87,19 @@ accelerate launch scripts/train_dreambooth_lora_sd3.py \
     --mixed_precision bf16 \
     --resolution 1024
 
+# Third phase: Run inference
+python scripts/run_inference.py.py -m t2i -lp models/loras/celeba/ace/121/lora_weight.safetensors -op outputs/celeba/ace_t2i/121 -spi 100 -p "a photo of a sks person"
+python scripts/run_inference.py.py -m t2i -lp models/loras/celeba/ace/1135/lora_weight.safetensors -op outputs/celeba/ace_t2i/1135 -spi 100 -p "a photo of a sks person"
+python scripts/run_inference.py.py -m t2i -lp models/loras/celeba/ace/1422/lora_weight.safetensors -op outputs/celeba/ace_t2i/1422 -spi 100 -p "a photo of a sks person"
+python scripts/run_inference.py.py -m t2i -lp models/loras/celeba/ace/1499/lora_weight.safetensors -op outputs/celeba/ace_t2i/1499 -spi 100 -p "a photo of a sks person"
+python scripts/run_inference.py.py -m t2i -lp models/loras/celeba/ace/1657/lora_weight.safetensors -op outputs/celeba/ace_t2i/1657 -spi 100 -p "a photo of a sks person"
+
+python scripts/run_inference.py.py -m i2i -ip data/outputs/celeba/ace/121 -op outputs/celeba/ace_i2i/121 -spi 1 -p "a photo of a sks person"
+python scripts/run_inference.py.py -m i2i -ip data/outputs/celeba/ace/1135 -op outputs/celeba/ace_i2i/1135 -spi 1 -p "a photo of a sks person"
+python scripts/run_inference.py.py -m i2i -ip data/outputs/celeba/ace/1422 -op outputs/celeba/ace_i2i/1422 -spi 1 -p "a photo of a sks person"
+python scripts/run_inference.py.py -m i2i -ip data/outputs/celeba/ace/1499 -op outputs/celeba/ace_i2i/1499 -spi 1 -p "a photo of a sks person"
+python scripts/run_inference.py.py -m i2i -ip data/outputs/celeba/ace/1657 -op outputs/celeba/ace_i2i/1657 -spi 1 -p "a photo of a sks person"
+
 # Third phase: Run scripts/eval_attacks
 python scripts/eval_attacks.py -m CLIPT2I --path models/loras/celeba/ace/121 --std_path data/celeba/121 -c person
 python scripts/eval_attacks.py -m CLIPT2I --path models/loras/celeba/ace/1135 --std_path data/celeba/1135 -c person

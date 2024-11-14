@@ -250,8 +250,7 @@ def parse_args(input_args=None):
     parser.add_argument(
         "--pretrained_model_name_or_path",
         type=str,
-        default=None,
-        required=True,
+        default="models/weights/sd3_medium_incl_clips_t5xxlfp16.safetensors",
         help="Path to pretrained model or model identifier from huggingface.co/models.",
     )
     parser.add_argument(
