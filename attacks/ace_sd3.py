@@ -740,7 +740,7 @@ def parse_args():
     parser.add_argument(
         "--target_image_path",
         type=str,
-        default=None,
+        default='data/targets/NIPS.png',
         help="Path to target image for targeted attack.",
     )
     parser.add_argument(
