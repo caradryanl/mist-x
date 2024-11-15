@@ -68,6 +68,7 @@ class PreprocessedDreamBoothDataset(Dataset):
         self.center_crop = center_crop
         self.device = device
         vae = vae.to(device)
+        text_encoders = [text_encoder.to(device) for text_encoder in text_encoders]
         
         # Process instance images and convert to latents
         self.instance_data_root = Path(instance_data_root)
