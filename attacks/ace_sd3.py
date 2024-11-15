@@ -334,8 +334,8 @@ def pgd_attack(
     # Initialize variables
     perturbed_images = perturbed_images.clone().detach().to(device)
     original_images = original_images.clone().detach().to(device)
-    if target_images is not None:
-        target_images = target_images.to(device)
+    if target_latents is not None:
+        target_latents = target_latents.to(device)
 
     batch_size = args.train_batch_size
     num_images = len(perturbed_images)
@@ -354,7 +354,6 @@ def pgd_attack(
         # Get current batch
         perturbed_batch = perturbed_images[idx:batch_end].clone()
         original_batch = original_images[idx:batch_end]
-        target_batch = target_images[idx:batch_end] if target_images is not None else None
         
         for step in range(num_steps):
             perturbed_batch.requires_grad_(True)
@@ -403,7 +402,7 @@ def pgd_attack(
             # Update perturbed images with PGD step
             with torch.no_grad():
                 # For targeted attack, move towards target
-                if target_batch is not None:
+                if target_latents is not None:
                     perturbed_batch = perturbed_batch - args.pgd_alpha * grad.sign()
                 else:
                     # For untargeted attack, move away from original
