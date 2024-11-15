@@ -483,6 +483,21 @@ def main(args):
     if args.with_prior_preservation:
         generate_class_images(args, accelerator)
 
+    # Load tokenizers first
+    tokenizer_one = CLIPTokenizer.from_pretrained(
+        args.pretrained_model_name_or_path,
+        subfolder="tokenizer",
+    )
+    tokenizer_two = CLIPTokenizer.from_pretrained(
+        args.pretrained_model_name_or_path,
+        subfolder="tokenizer_2",
+    )
+    tokenizer_three = T5TokenizerFast.from_pretrained(
+        args.pretrained_model_name_or_path,
+        subfolder="tokenizer_3",
+    )
+    tokenizers = [tokenizer_one, tokenizer_two, tokenizer_three]
+
     # Load pipeline and models
     pipeline = StableDiffusion3Pipeline.from_pretrained(
         args.pretrained_model_name_or_path,
@@ -503,11 +518,11 @@ def main(args):
     )
     pipeline.transformer.add_adapter(transformer_lora_config)
 
-    # Create dataset
+    # Create dataset with separate tokenizers
     train_dataset = DreamBoothDataset(
         instance_data_root=args.instance_data_dir,
         instance_prompt=args.instance_prompt,
-        tokenizers=pipeline.tokenizers,
+        tokenizers=tokenizers,  # Pass the list of tokenizers
         size=args.resolution,
         center_crop=args.center_crop,
         class_data_root=args.class_data_dir if args.with_prior_preservation else None,
