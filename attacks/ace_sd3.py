@@ -1,3 +1,7 @@
+import sys
+sys.path.append(".")
+sys.path.append("..")
+
 import argparse
 import copy
 import itertools
