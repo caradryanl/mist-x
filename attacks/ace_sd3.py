@@ -606,26 +606,26 @@ def main(args):
             if global_step >= args.max_train_steps:
                 break
 
-        # Save perturbed instance images at the end of each epoch
-        if accelerator.is_main_process:
-            output_dir = Path(args.output_dir)
-            output_dir.mkdir(parents=True, exist_ok=True)
-            
-            # Decode latents back to images for saving
-            vae.to(accelerator.device)
-            with torch.no_grad():
-                for idx, latent in enumerate(perturbed_instance_latents):
-                    # Scale and decode the image latents with vae
-                    latent = 1 / vae.config.scaling_factor * latent
-                    image = vae.decode(latent.unsqueeze(0).to(accelerator.device)).sample
-                    
-                    # Convert to PIL image
-                    image = (image / 2 + 0.5).clamp(0, 1)
-                    image = image.cpu().permute(0, 2, 3, 1).numpy()[0]
-                    image = Image.fromarray((image * 255).round().astype("uint8"))
-                    image.save(
-                        os.path.join(args.output_dir, f"adversarial_instance_epoch{epoch}_{idx}.png")
-                    )
+    # Save perturbed instance images at the end of the last epoch
+    if accelerator.is_main_process:
+        output_dir = Path(args.output_dir)
+        output_dir.mkdir(parents=True, exist_ok=True)
+        
+        # Decode latents back to images for saving
+        vae.to(accelerator.device)
+        with torch.no_grad():
+            for idx, latent in enumerate(perturbed_instance_latents):
+                # Scale and decode the image latents with vae
+                latent = 1 / vae.config.scaling_factor * latent
+                image = vae.decode(latent.unsqueeze(0).to(accelerator.device)).sample
+                
+                # Convert to PIL image
+                image = (image / 2 + 0.5).clamp(0, 1)
+                image = image.cpu().permute(0, 2, 3, 1).numpy()[0]
+                image = Image.fromarray((image * 255).round().astype("uint8"))
+                image.save(
+                    os.path.join(args.output_dir, f"adversarial_instance_{idx}.png")
+                )
 
         accelerator.wait_for_everyone()
 

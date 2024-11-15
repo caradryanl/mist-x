@@ -47,17 +47,17 @@ accelerate launch scripts/train_dreambooth_lora_sd3.py \
     --resolution 1024
 
 # Second phase: Run inference
-python scripts/run_inference.py.py -m t2i -lp models/loras/wikiart/clean/Fauvism_henri-matisse/lora_weight.safetensors -op outputs/wikiart/clean_t2i/Fauvism_henri-matisse -spi 100 -p "a photo of a sks painting"
-python scripts/run_inference.py.py -m t2i -lp models/loras/wikiart/clean/Impressionism_claude-monet/lora_weight.safetensors -op outputs/wikiart/clean_t2i/Impressionism_claude-monet -spi 100 -p "a photo of a sks painting"
-python scripts/run_inference.py.py -m t2i -lp models/loras/wikiart/clean/Pointillism_paul-signac/lora_weight.safetensors -op outputs/wikiart/clean_t2i/Pointillism_paul-signac -spi 100 -p "a photo of a sks painting"
-python scripts/run_inference.py.py -m t2i -lp models/loras/wikiart/clean/Post_Impressionism-van-gogh/lora_weight.safetensors -op outputs/wikiart/clean_t2i/Post_Impressionism-van-gogh -spi 100 -p "a photo of a sks painting"
-python scripts/run_inference.py.py -m t2i -lp models/loras/wikiart/clean/Rococo_canaletto/lora_weight.safetensors -op outputs/wikiart/clean_t2i/Rococo_canaletto -spi 100 -p "a photo of a sks painting"
+python scripts/run_inference.py -m t2i -lp models/loras/wikiart/clean/Fauvism_henri-matisse/lora_weight.safetensors -op outputs/wikiart/clean_t2i/Fauvism_henri-matisse -spi 100 -p "a photo of a sks painting"
+python scripts/run_inference.py -m t2i -lp models/loras/wikiart/clean/Impressionism_claude-monet/lora_weight.safetensors -op outputs/wikiart/clean_t2i/Impressionism_claude-monet -spi 100 -p "a photo of a sks painting"
+python scripts/run_inference.py -m t2i -lp models/loras/wikiart/clean/Pointillism_paul-signac/lora_weight.safetensors -op outputs/wikiart/clean_t2i/Pointillism_paul-signac -spi 100 -p "a photo of a sks painting"
+python scripts/run_inference.py -m t2i -lp models/loras/wikiart/clean/Post_Impressionism-van-gogh/lora_weight.safetensors -op outputs/wikiart/clean_t2i/Post_Impressionism-van-gogh -spi 100 -p "a photo of a sks painting"
+python scripts/run_inference.py -m t2i -lp models/loras/wikiart/clean/Rococo_canaletto/lora_weight.safetensors -op outputs/wikiart/clean_t2i/Rococo_canaletto -spi 100 -p "a photo of a sks painting"
 
-python scripts/run_inference.py.py -m i2i -ip data/wikiart/Fauvism_henri-matisse -op outputs/wikiart/clean_i2i/Fauvism_henri-matisse -spi 1 -p "a photo of a sks painting"
-python scripts/run_inference.py.py -m i2i -ip data/wikiart/Impressionism_claude-monet -op outputs/wikiart/clean_i2i/Impressionism_claude-monet -spi 1 -p "a photo of a sks painting"
-python scripts/run_inference.py.py -m i2i -ip data/wikiart/Pointillism_paul-signac -op outputs/wikiart/clean_i2i/Pointillism_paul-signac -spi 1 -p "a photo of a sks painting"
-python scripts/run_inference.py.py -m i2i -ip data/wikiart/Post_Impressionism-van-gogh -op outputs/wikiart/clean_i2i/Post_Impressionism-van-gogh -spi 1 -p "a photo of a sks painting"
-python scripts/run_inference.py.py -m i2i -ip data/wikiart/Rococo_canaletto -op outputs/wikiart/clean_i2i/Rococo_canaletto -spi 1 -p "a photo of a sks painting"
+python scripts/run_inference.py -m i2i -ip data/wikiart/Fauvism_henri-matisse -op outputs/wikiart/clean_i2i/Fauvism_henri-matisse -spi 1 -p "a photo of a sks painting"
+python scripts/run_inference.py -m i2i -ip data/wikiart/Impressionism_claude-monet -op outputs/wikiart/clean_i2i/Impressionism_claude-monet -spi 1 -p "a photo of a sks painting"
+python scripts/run_inference.py -m i2i -ip data/wikiart/Pointillism_paul-signac -op outputs/wikiart/clean_i2i/Pointillism_paul-signac -spi 1 -p "a photo of a sks painting"
+python scripts/run_inference.py -m i2i -ip data/wikiart/Post_Impressionism-van-gogh -op outputs/wikiart/clean_i2i/Post_Impressionism-van-gogh -spi 1 -p "a photo of a sks painting"
+python scripts/run_inference.py -m i2i -ip data/wikiart/Rococo_canaletto -op outputs/wikiart/clean_i2i/Rococo_canaletto -spi 1 -p "a photo of a sks painting"
 
 # Third phase: Run evaluation
 python scripts/eval_attacks.py -m CLIPT2I --path models/loras/wikiart/clean/Fauvism_henri-matisse --std_path data/wikiart/Fauvism_henri-matisse -c painting

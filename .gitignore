@@ -1,7 +1,9 @@
-data/
 !data/class/default_class_data_dir
 !data/inputs/put_your_inputs_here
 !data/outputs/check_your_outputs_here
+!data/wikiart/*
+!data/celeba/*
+data/
 models/
 !models/weights/put_your_models_here
 !models/loras/put_your_loras_here

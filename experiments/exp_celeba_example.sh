@@ -24,10 +24,10 @@ accelerate launch scripts/train_dreambooth_lora_sd3.py \
 
 
 # Third phase: Run inference
-python scripts/run_inference.py.py -m t2i -lp models/loras/celeba/ace/121/lora_weight.safetensors -op outputs/celeba/ace_t2i/121 -spi 100 -p "a photo of a sks person"
+python scripts/run_inference.py -m t2i -lp models/loras/celeba/ace/121/lora_weight.safetensors -op outputs/celeba/ace_t2i/121 -spi 100 -p "a photo of a sks person"
 
 
-python scripts/run_inference.py.py -m i2i -ip data/outputs/celeba/ace/121 -op outputs/celeba/ace_i2i/121 -spi 1 -p "a photo of a sks person"
+python scripts/run_inference.py -m i2i -ip data/outputs/celeba/ace/121 -op outputs/celeba/ace_i2i/121 -spi 1 -p "a photo of a sks person"
 
 
 # Third phase: Run scripts/eval_attacks
