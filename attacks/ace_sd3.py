@@ -312,11 +312,13 @@ def generate_class_images(args, accelerator):
 
 def pgd_attack(
     args,
-    pipeline,
+    transformer,
+    vae,
     noise_scheduler: FlowMatchEulerDiscreteScheduler,
     perturbed_images,
     original_images,
-    target_images=None,
+    prompt_embeds,
+    target_latents=None,
     num_steps=50,
     device="cuda",
 ):
@@ -324,22 +326,16 @@ def pgd_attack(
     Perform PGD attack on the pixel level while using the full SD3 pipeline.
     """
     # Move models to device and set to eval mode
-    pipeline.to(device)
-    pipeline.transformer.eval()
-    pipeline.vae.eval()
-    pipeline.text_encoder.eval()
-    pipeline.text_encoder_2.eval()
-    pipeline.text_encoder_3.eval()
+    transformer.to(device)
+    transformer.eval()
+    vae.to(device)
+    vae.eval()
 
     # Initialize variables
     perturbed_images = perturbed_images.clone().detach().to(device)
     original_images = original_images.clone().detach().to(device)
     if target_images is not None:
         target_images = target_images.to(device)
-
-    # Create list of text encoders and tokenizers
-    text_encoders = [pipeline.text_encoder, pipeline.text_encoder_2, pipeline.text_encoder_3]
-    tokenizers = [pipeline.tokenizer, pipeline.tokenizer_2, pipeline.tokenizer_3]
 
     batch_size = args.train_batch_size
     num_images = len(perturbed_images)
@@ -364,18 +360,8 @@ def pgd_attack(
             perturbed_batch.requires_grad_(True)
             
             # Get latent representation
-            latents = pipeline.vae.encode(perturbed_batch).latent_dist.sample()
-            latents = latents * pipeline.vae.config.scaling_factor
-
-            # Encode prompt using the provided encode_prompt function
-            prompt_embeds, pooled_prompt_embeds = encode_prompt(
-                text_encoders=text_encoders,
-                tokenizers=tokenizers,
-                prompt=args.instance_prompt,
-                max_sequence_length=77,  # Standard max length for T5
-                device=device,
-                num_images_per_prompt=1
-            )
+            latents = vae.encode(perturbed_batch).latent_dist.sample()
+            latents = latents * vae.config.scaling_factor
 
             # Sample noise and timesteps
             noise = torch.randn_like(latents)
@@ -395,23 +381,21 @@ def pgd_attack(
             noisy_latents = sigmas * noise + (1.0 - sigmas) * latents
             
             # Get model prediction using proper argument names for transformer's forward
-            model_pred = pipeline.transformer(
+            model_pred = transformer(
                 hidden_states=noisy_latents,
                 timestep=timesteps,
-                encoder_hidden_states=prompt_embeds,
-                pooled_projections=pooled_prompt_embeds,
+                encoder_hidden_states=prompt_embeds[0],
+                pooled_projections=prompt_embeds[1],
                 return_dict=False,
             )[0]
 
             # Calculate loss based on attack type
-            if target_batch is not None:
+            if target_latents is not None:
                 # Targeted attack: minimize distance to target latents
-                target_latents = pipeline.vae.encode(target_batch).latent_dist.sample()
-                target_latents = target_latents * pipeline.vae.config.scaling_factor
                 loss = F.mse_loss(model_pred, target_latents)
             else:
                 # Untargeted attack: maximize distance from original noise
-                loss = -F.mse_loss(model_pred, noise)
+                loss = F.mse_loss(model_pred, noise)
 
             # Calculate gradients
             grad = torch.autograd.grad(loss, perturbed_batch)[0]
@@ -584,6 +568,32 @@ def main(args):
     text_encoders = [pipeline.text_encoder, pipeline.text_encoder_2, pipeline.text_encoder_3]
     tokenizers = [pipeline.tokenizer, pipeline.tokenizer_2, pipeline.tokenizer_3]
 
+    instance_prompt_embeds = encode_prompt(
+        text_encoders=text_encoders,
+        tokenizers=tokenizers,
+        prompt=args.instance_prompt,
+        max_sequence_length=77,  # Standard max length for T5
+        device=accelerator.device,
+        num_images_per_prompt=1
+    ).detach()
+    if args.with_prior_preservation:
+        class_prompt_embeds = encode_prompt(
+            text_encoders=text_encoders,
+            tokenizers=tokenizers,
+            prompt=args.class_prompt,
+            max_sequence_length=77,  # Standard max length for T5
+            device=accelerator.device,
+            num_images_per_prompt=1
+        ).detach()
+    for text_encoder in text_encoders:
+        text_encoder = text_encoder.to('cpu')
+    
+    if target_images is not None:
+        # Targeted attack: minimize distance to target latents
+        target_latents = pipeline.vae.encode(target_images).latent_dist.sample()
+        target_latents = target_latents * pipeline.vae.config.scaling_factor
+        target_latents = target_latents.detach()
+
     # Outer loop for epochs
     for epoch in range(args.max_train_steps):
         logger.info(f"Starting epoch {epoch}")
@@ -591,11 +601,13 @@ def main(args):
         # 1. One step of adversarial attack
         perturbed_images = pgd_attack(
             args,
-            pipeline,
+            pipeline.transformer,
+            pipeline.vae,
             pipeline.scheduler,
             perturbed_images,
             original_images,
-            target_images,
+            instance_prompt_embeds,
+            target_latents,
             num_steps=5,  # Only one PGD step per epoch
             device=accelerator.device
         )
@@ -605,15 +617,7 @@ def main(args):
         pipeline.vae.eval()
         
         # Cache class prompt embeddings if using prior preservation
-        if args.with_prior_preservation:
-            class_prompt_embeds = encode_prompt(
-                text_encoders=text_encoders,
-                tokenizers=tokenizers,
-                prompt=args.class_prompt,
-                max_sequence_length=77,  # Standard max length for T5
-                device=accelerator.device,
-                num_images_per_prompt=1
-            )
+        
 
         # Inner loop for multiple training steps per epoch
         for f_step in range(args.max_f_train_steps):
@@ -625,14 +629,7 @@ def main(args):
 
             
             # Encode prompt using the provided encode_prompt function
-            instance_prompt_embeds = encode_prompt(
-                text_encoders=text_encoders,
-                tokenizers=tokenizers,
-                prompt=args.instance_prompt,
-                max_sequence_length=77,  # Standard max length for T5
-                device=accelerator.device,
-                num_images_per_prompt=1
-            )
+            
             
             instance_loss = train_one_step(
                 pipeline.transformer,
