@@ -145,13 +145,6 @@ class PreprocessedDreamBoothDataset(Dataset):
         if not image.mode == "RGB":
             image = image.convert("RGB")
         image = resize(image)
-        if self.center_crop:
-            y1 = max(0, int(round((image.height - self.size) / 2.0)))
-            x1 = max(0, int(round((image.width - self.size) / 2.0)))
-            image = crop(image)
-        else:
-            y1, x1, h, w = crop.get_params(image, (self.size, self.size))
-            image = crop(image, y1, x1, h, w)
         return transforms(image)
 
     def _get_text_embeddings(self, prompt, tokenizers, text_encoders, device):
