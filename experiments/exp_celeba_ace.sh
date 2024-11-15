@@ -9,7 +9,7 @@ accelerate launch attacks/ace_sd3.py \
     --class_prompt "a photo of a person" \
     --mixed_precision bf16 \
     --max_train_steps 5 \
-    --resolution 1024
+    --resolution 512
 
 accelerate launch attacks/ace_sd3.py \
     --instance_data_dir data/celeba/1135 \
@@ -19,7 +19,7 @@ accelerate launch attacks/ace_sd3.py \
     --class_prompt "a photo of a person" \
     --mixed_precision bf16 \
     --max_train_steps 5 \
-    --resolution 1024
+    --resolution 512
 
 accelerate launch attacks/ace_sd3.py \
     --instance_data_dir data/celeba/1422 \
@@ -29,7 +29,7 @@ accelerate launch attacks/ace_sd3.py \
     --class_prompt "a photo of a person" \
     --mixed_precision bf16 \
     --max_train_steps 5 \
-    --resolution 1024
+    --resolution 512
 
 accelerate launch attacks/ace_sd3.py \
     --instance_data_dir data/celeba/1499 \
@@ -39,7 +39,7 @@ accelerate launch attacks/ace_sd3.py \
     --class_prompt "a photo of a person" \
     --mixed_precision bf16 \
     --max_train_steps 5 \
-    --resolution 1024
+    --resolution 512
 
 accelerate launch attacks/ace_sd3.py \
     --instance_data_dir data/celeba/1657 \
@@ -49,7 +49,7 @@ accelerate launch attacks/ace_sd3.py \
     --class_prompt "a photo of a person" \
     --mixed_precision bf16 \
     --max_train_steps 5 \
-    --resolution 1024
+    --resolution 512
 
 # Second phase: Train LoRA on perturbed images
 accelerate launch scripts/train_dreambooth_lora_sd3.py \
@@ -60,7 +60,7 @@ accelerate launch scripts/train_dreambooth_lora_sd3.py \
     --class_prompt "a photo of a person" \
     --mixed_precision bf16 \
     --max_train_steps 1000 \
-    --resolution 1024
+    --resolution 512
 
 accelerate launch scripts/train_dreambooth_lora_sd3.py \
     --instance_data_dir data/outputs/celeba/ace/1135 \
@@ -70,7 +70,7 @@ accelerate launch scripts/train_dreambooth_lora_sd3.py \
     --class_prompt "a photo of a person" \
     --mixed_precision bf16 \
     --max_train_steps 1000 \
-    --resolution 1024
+    --resolution 512
 
 accelerate launch scripts/train_dreambooth_lora_sd3.py \
     --instance_data_dir data/outputs/celeba/ace/1422 \
@@ -80,7 +80,7 @@ accelerate launch scripts/train_dreambooth_lora_sd3.py \
     --class_prompt "a photo of a person" \
     --mixed_precision bf16 \
     --max_train_steps 1000 \
-    --resolution 1024
+    --resolution 512
 
 accelerate launch scripts/train_dreambooth_lora_sd3.py \
     --instance_data_dir data/outputs/celeba/ace/1499 \
@@ -90,7 +90,7 @@ accelerate launch scripts/train_dreambooth_lora_sd3.py \
     --class_prompt "a photo of a person" \
     --mixed_precision bf16 \
     --max_train_steps 1000 \
-    --resolution 1024
+    --resolution 512
 
 accelerate launch scripts/train_dreambooth_lora_sd3.py \
     --instance_data_dir data/outputs/celeba/ace/1657 \
@@ -100,7 +100,7 @@ accelerate launch scripts/train_dreambooth_lora_sd3.py \
     --class_prompt "a photo of a person" \
     --mixed_precision bf16 \
     --max_train_steps 1000 \
-    --resolution 1024
+    --resolution 512
 
 # Third phase: Run inference
 python scripts/run_inference.py -m t2i -lp models/loras/celeba/ace/121/lora_weight.safetensors -op outputs/celeba/ace_t2i/121 -spi 100 -p "a photo of a sks person"
