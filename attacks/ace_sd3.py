@@ -582,6 +582,9 @@ def main(args):
         lr=args.learning_rate,
     )
 
+    text_encoders = [pipeline.text_encoder, pipeline.text_encoder_2, pipeline.text_encoder_3]
+    tokenizers = [pipeline.tokenizer, pipeline.tokenizer_2, pipeline.tokenizer_3]
+
     # Outer loop for epochs
     for epoch in range(args.max_train_steps):
         logger.info(f"Starting epoch {epoch}")
@@ -604,11 +607,13 @@ def main(args):
         
         # Cache class prompt embeddings if using prior preservation
         if args.with_prior_preservation:
-            class_prompt_embeds = pipeline._encode_prompt(
-                args.class_prompt,
-                accelerator.device,
-                1,
-                do_classifier_free_guidance=False
+            class_prompt_embeds = encode_prompt(
+                text_encoders=text_encoders,
+                tokenizers=tokenizers,
+                prompt=args.class_prompt,
+                max_sequence_length=77,  # Standard max length for T5
+                device=accelerator.device,
+                num_images_per_prompt=1
             )
 
         # Inner loop for multiple training steps per epoch
@@ -618,11 +623,16 @@ def main(args):
             # Train on instance image
             instance_idx = f_step % len(perturbed_images)
             instance_image = perturbed_images[instance_idx:instance_idx+1].to(accelerator.device)
-            instance_prompt_embeds = pipeline._encode_prompt(
-                args.instance_prompt,
-                accelerator.device,
-                1,
-                do_classifier_free_guidance=False
+
+            
+            # Encode prompt using the provided encode_prompt function
+            instance_prompt_embeds = encode_prompt(
+                text_encoders=text_encoders,
+                tokenizers=tokenizers,
+                prompt=args.instance_prompt,
+                max_sequence_length=77,  # Standard max length for T5
+                device=accelerator.device,
+                num_images_per_prompt=1
             )
             
             instance_loss = train_one_step(
