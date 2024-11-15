@@ -14,7 +14,7 @@ import torch
 import torch.nn.functional as F
 import torch.utils.checkpoint
 import torch.utils.data
-import transformers
+import hashlib
 import accelerate
 from accelerate import Accelerator
 from accelerate.logging import get_logger
@@ -38,143 +38,6 @@ from transformers import CLIPTokenizer, T5TokenizerFast
 from huggingface_hub.utils import insecure_hashlib
 from scripts.train_dreambooth_lora_sd3 import encode_prompt
 
-logger = get_logger(__name__)
-
-class PromptDataset:
-    def __init__(self, prompt, num_samples):
-        self.prompt = prompt
-        self.num_samples = num_samples
-
-    def __len__(self):
-        return self.num_samples
-
-    def __getitem__(self, index):
-        example = {}
-        example["prompt"] = self.prompt
-        example["index"] = index
-        return example
-
-class PreprocessedDreamBoothDataset(Dataset):
-    def __init__(
-        self,
-        instance_data_root,
-        instance_prompt,
-        tokenizers,
-        text_encoders,
-        vae,
-        target_image_path=None,  # Added target image path
-        class_data_root=None,
-        class_prompt=None,
-        size=1024,
-        center_crop=False,
-        device="cuda",
-    ):
-        self.size = size
-        self.center_crop = center_crop
-        self.device = device
-        vae = vae.to(device)
-        text_encoders = [text_encoder.to(device) for text_encoder in text_encoders]
-        
-        # Process instance images and convert to latents
-        self.instance_data_root = Path(instance_data_root)
-        if not self.instance_data_root.exists():
-            raise ValueError("Instance images root doesn't exist.")
-            
-        # Prepare image transforms
-        train_resize = transforms.Resize(size, interpolation=transforms.InterpolationMode.BILINEAR)
-        train_crop = transforms.CenterCrop(size) if center_crop else transforms.RandomCrop(size)
-        train_transforms = transforms.Compose([
-            transforms.ToTensor(),
-            transforms.Normalize([0.5], [0.5]),
-        ])
-
-        # Process instance images to latents
-        logger.info("Processing instance images to latents...")
-        instance_images = [Image.open(path) for path in list(Path(instance_data_root).iterdir())]
-        self.instance_latents = []
-        for image in tqdm(instance_images):
-            processed_image = self._preprocess_image(image, train_resize, train_crop, train_transforms)
-            with torch.no_grad():
-                latent = vae.encode(processed_image.unsqueeze(0).to(device)).latent_dist.sample()
-                self.instance_latents.append((latent * vae.config.scaling_factor).cpu())
-        self.instance_latents = torch.cat(self.instance_latents)
-        
-        # Process instance prompt to embeddings
-        logger.info("Processing instance prompt to embeddings...")
-        self.instance_embeddings = self._get_text_embeddings(
-            instance_prompt,
-            tokenizers,
-            text_encoders,
-            device
-        )
-        
-        # Process class data if provided
-        self.class_latents = None
-        self.class_embeddings = None
-        if class_data_root is not None and class_prompt is not None:
-            self.class_data_root = Path(class_data_root)
-            if not self.class_data_root.exists():
-                raise ValueError("Class images root doesn't exist.")
-                
-            logger.info("Processing class images to latents...")
-            class_images = [Image.open(path) for path in list(Path(class_data_root).iterdir())]
-            class_latents = []
-            for image in tqdm(class_images):
-                processed_image = self._preprocess_image(image, train_resize, train_crop, train_transforms)
-                with torch.no_grad():
-                    latent = vae.encode(processed_image.unsqueeze(0).to(device)).latent_dist.sample()
-                    class_latents.append((latent * vae.config.scaling_factor).cpu())
-            self.class_latents = torch.cat(class_latents)
-            
-            logger.info("Processing class prompt to embeddings...")
-            self.class_embeddings = self._get_text_embeddings(
-                class_prompt,
-                tokenizers,
-                text_encoders,
-                device
-            )
-        
-        self.target_latents = None
-        if target_image_path is not None:
-            logger.info("Processing target image to latents...")
-            target_image = Image.open(target_image_path)
-            processed_target = self._preprocess_image(target_image, train_resize, train_crop, train_transforms)
-            with torch.no_grad():
-                target_latent = vae.encode(processed_target.unsqueeze(0).to(device)).latent_dist.sample()
-                self.target_latents = (target_latent * vae.config.scaling_factor).cpu()
-
-        self.num_instance_images = len(self.instance_latents)
-import argparse
-import copy
-import itertools
-import logging
-import math
-import os
-from pathlib import Path
-import hashlib
-
-import torch
-import torch.nn.functional as F
-import torch.utils.checkpoint
-import transformers
-from accelerate import Accelerator
-from accelerate.logging import get_logger
-from accelerate.utils import ProjectConfiguration, set_seed
-from diffusers import (
-    AutoencoderKL,
-    FlowMatchEulerDiscreteScheduler,
-    SD3Transformer2DModel,
-    StableDiffusion3Pipeline,
-)
-from diffusers.optimization import get_scheduler
-from diffusers.training_utils import compute_loss_weighting_for_sd3
-from peft import LoraConfig
-from PIL import Image
-from PIL.ImageOps import exif_transpose
-from torch.utils.data import Dataset
-from torchvision import transforms
-from tqdm.auto import tqdm
-from transformers import CLIPTokenizer, T5TokenizerFast
 
 logger = get_logger(__name__)
 
@@ -678,7 +541,10 @@ def main(args):
 
     # Save final results
     accelerator.wait_for_everyone()
-    if accelerator.is_main_process:        
+    if accelerator.is_main_process:    
+        output_dir = Path(args.output_dir)
+        if not output_dir.exists():
+            output_dir.mkdir(parents=True)    
         # Save final perturbed images
         for idx, perturbed_image in enumerate(perturbed_images):
             image = (perturbed_image * 0.5 + 0.5).clamp(0, 1)
