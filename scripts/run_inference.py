@@ -75,7 +75,6 @@ def load_model_with_lora(
         pipe = pipeline_class.from_pretrained(
             model_id,
             torch_dtype=torch.float16,
-            variant="fp16",
             **kwargs
         ).to("cuda")
         
