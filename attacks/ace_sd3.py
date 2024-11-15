@@ -32,6 +32,7 @@ from torchvision.transforms.functional import crop
 from tqdm.auto import tqdm
 from transformers import CLIPTokenizer, T5TokenizerFast
 from huggingface_hub.utils import insecure_hashlib
+from scripts.train_dreambooth_lora_sd3 import encode_prompt
 
 logger = get_logger(__name__)
 
@@ -332,6 +333,10 @@ def pgd_attack(
     if target_images is not None:
         target_images = target_images.to(device)
 
+    # Create list of text encoders and tokenizers
+    text_encoders = [pipeline.text_encoder, pipeline.text_encoder_2, pipeline.text_encoder_3]
+    tokenizers = [pipeline.tokenizer, pipeline.tokenizer_2, pipeline.tokenizer_3]
+
     batch_size = args.train_batch_size
     num_images = len(perturbed_images)
     attacked_images = []
@@ -352,46 +357,15 @@ def pgd_attack(
             latents = pipeline.vae.encode(perturbed_batch).latent_dist.sample()
             latents = latents * pipeline.vae.config.scaling_factor
 
-            # Get prompt embeddings - properly handling SD3's multi-encoder setup
-            text_input_ids_one = pipeline.tokenizer(
-                args.instance_prompt,
-                return_tensors="pt",
-                padding="max_length",
-                max_length=pipeline.tokenizer.model_max_length,
-                truncation=True,
-            ).input_ids.to(device)
-            
-            text_input_ids_two = pipeline.tokenizer_2(
-                args.instance_prompt,
-                return_tensors="pt",
-                padding="max_length",
-                max_length=pipeline.tokenizer_2.model_max_length,
-                truncation=True,
-            ).input_ids.to(device)
-            
-            text_input_ids_three = pipeline.tokenizer_3(
-                args.instance_prompt,
-                return_tensors="pt",
-                padding="max_length",
-                max_length=pipeline.tokenizer_3.model_max_length,
-                truncation=True,
-            ).input_ids.to(device)
-
-            prompt_embeds_one = pipeline.text_encoder(text_input_ids_one, output_hidden_states=True)
-            prompt_embeds_two = pipeline.text_encoder_2(text_input_ids_two, output_hidden_states=True)
-            prompt_embeds_three = pipeline.text_encoder_3(text_input_ids_three)[0]
-            
-            # Combine embeddings as required by SD3
-            prompt_embeds = torch.cat([
-                prompt_embeds_one.hidden_states[-2],
-                prompt_embeds_two.hidden_states[-2],
-                prompt_embeds_three
-            ], dim=-2)
-            
-            pooled_prompt_embeds = torch.cat([
-                prompt_embeds_one[0],
-                prompt_embeds_two[0]
-            ], dim=-1)
+            # Encode prompt using the provided encode_prompt function
+            prompt_embeds, pooled_prompt_embeds = encode_prompt(
+                text_encoders=text_encoders,
+                tokenizers=tokenizers,
+                prompt=args.instance_prompt,
+                max_sequence_length=77,  # Standard max length for T5
+                device=device,
+                num_images_per_prompt=1
+            )
 
             # Sample noise and timesteps
             noise = torch.randn_like(latents)
