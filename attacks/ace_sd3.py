@@ -394,13 +394,14 @@ def pgd_attack(
             # Add noise using flow matching formulation
             noisy_latents = sigmas * noise + (1.0 - sigmas) * latents
             
-            # Get model prediction
+            # Get model prediction using proper argument names for transformer's forward
             model_pred = pipeline.transformer(
-                noisy_latents,
-                timesteps,
+                hidden_states=noisy_latents,
+                timestep=timesteps,
                 encoder_hidden_states=prompt_embeds,
-                pooled_projections=pooled_prompt_embeds
-            ).sample
+                pooled_projections=pooled_prompt_embeds,
+                return_dict=False,
+            )[0]
 
             # Calculate loss based on attack type
             if target_batch is not None:
@@ -456,15 +457,19 @@ def train_one_step(
     timesteps = torch.randint(0, noise_scheduler.config.num_train_timesteps, (latents.shape[0],), device=device)
     
     # Add noise to latents
-    noisy_latents = noise_scheduler.add_noise(latents, noise, timesteps)
+    sigmas = noise_scheduler.sigmas[timesteps].flatten()
+    while len(sigmas.shape) < len(latents.shape):
+        sigmas = sigmas.unsqueeze(-1)
+    noisy_latents = sigmas * noise + (1.0 - sigmas) * latents
     
-    # Get model prediction
+    # Get model prediction with proper argument names
     model_pred = transformer(
-        noisy_latents,
-        timesteps,
+        hidden_states=noisy_latents,
+        timestep=timesteps,
         encoder_hidden_states=prompt_embeds[0],
-        pooled_projections=prompt_embeds[1]
-    ).sample
+        pooled_projections=prompt_embeds[1],
+        return_dict=False,
+    )[0]
 
     # Calculate weighting for loss
     weighting = compute_loss_weighting_for_sd3(
