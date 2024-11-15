@@ -313,7 +313,7 @@ def generate_class_images(args, accelerator):
 def pgd_attack(
     args,
     pipeline,
-    noise_scheduler,
+    noise_scheduler: FlowMatchEulerDiscreteScheduler,
     perturbed_images,
     original_images,
     target_images=None,
@@ -376,7 +376,7 @@ def pgd_attack(
             timesteps = torch.randint(0, noise_scheduler.config.num_train_timesteps, (latents.shape[0],), device=device)
             
             # Add noise to latents
-            noisy_latents = noise_scheduler.add_noise(latents, noise, timesteps)
+            noisy_latents = noise_scheduler.scale_noise(latents, noise, timesteps)
             
             # Get model prediction
             model_pred = pipeline.transformer(
