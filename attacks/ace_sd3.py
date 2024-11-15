@@ -322,8 +322,9 @@ def pgd_attack(
     pipeline.to(device)
     pipeline.transformer.eval()
     pipeline.vae.eval()
-    for encoder in pipeline.text_encoders:
-        encoder.eval()
+    pipeline.text_encoder.eval()
+    pipeline.text_encoder_2.eval()
+    pipeline.text_encoder_3.eval()
 
     # Initialize variables
     perturbed_images = perturbed_images.clone().detach().to(device)
@@ -351,13 +352,46 @@ def pgd_attack(
             latents = pipeline.vae.encode(perturbed_batch).latent_dist.sample()
             latents = latents * pipeline.vae.config.scaling_factor
 
-            # Encode text prompt
-            prompt_embeds = pipeline._encode_prompt(
+            # Get prompt embeddings - properly handling SD3's multi-encoder setup
+            text_input_ids_one = pipeline.tokenizer(
                 args.instance_prompt,
-                device,
-                1,
-                do_classifier_free_guidance=False
-            )
+                return_tensors="pt",
+                padding="max_length",
+                max_length=pipeline.tokenizer.model_max_length,
+                truncation=True,
+            ).input_ids.to(device)
+            
+            text_input_ids_two = pipeline.tokenizer_2(
+                args.instance_prompt,
+                return_tensors="pt",
+                padding="max_length",
+                max_length=pipeline.tokenizer_2.model_max_length,
+                truncation=True,
+            ).input_ids.to(device)
+            
+            text_input_ids_three = pipeline.tokenizer_3(
+                args.instance_prompt,
+                return_tensors="pt",
+                padding="max_length",
+                max_length=pipeline.tokenizer_3.model_max_length,
+                truncation=True,
+            ).input_ids.to(device)
+
+            prompt_embeds_one = pipeline.text_encoder(text_input_ids_one, output_hidden_states=True)
+            prompt_embeds_two = pipeline.text_encoder_2(text_input_ids_two, output_hidden_states=True)
+            prompt_embeds_three = pipeline.text_encoder_3(text_input_ids_three)[0]
+            
+            # Combine embeddings as required by SD3
+            prompt_embeds = torch.cat([
+                prompt_embeds_one.hidden_states[-2],
+                prompt_embeds_two.hidden_states[-2],
+                prompt_embeds_three
+            ], dim=-2)
+            
+            pooled_prompt_embeds = torch.cat([
+                prompt_embeds_one[0],
+                prompt_embeds_two[0]
+            ], dim=-1)
 
             # Sample noise and timesteps
             noise = torch.randn_like(latents)
@@ -370,8 +404,8 @@ def pgd_attack(
             model_pred = pipeline.transformer(
                 noisy_latents,
                 timesteps,
-                encoder_hidden_states=prompt_embeds[0],
-                pooled_projections=prompt_embeds[1]
+                encoder_hidden_states=prompt_embeds,
+                pooled_projections=pooled_prompt_embeds
             ).sample
 
             # Calculate loss based on attack type
@@ -561,7 +595,7 @@ def main(args):
             perturbed_images,
             original_images,
             target_images,
-            num_steps=1,  # Only one PGD step per epoch
+            num_steps=5,  # Only one PGD step per epoch
             device=accelerator.device
         )
         
