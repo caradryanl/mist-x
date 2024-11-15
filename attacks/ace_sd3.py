@@ -323,8 +323,7 @@ def optimized_pgd_attack(
 
             if target_latents is not None:
                 # For targeted attack: minimize distance to target latents
-                target_noise = noise_scheduler.add_noise(target_latents, noise, timesteps)
-                loss = F.mse_loss(model_pred, target_noise)
+                loss = F.mse_loss(model_pred, target_latents)
             else:
                 # For untargeted attack: maximize distance from original noise
                 loss = F.mse_loss(model_pred, noise)
