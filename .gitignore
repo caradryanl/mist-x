@@ -7,3 +7,4 @@ data/
 models/
 !models/weights/put_your_models_here
 !models/loras/put_your_loras_here
+*__pycache__*
