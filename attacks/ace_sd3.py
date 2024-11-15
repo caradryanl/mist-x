@@ -636,7 +636,7 @@ def parse_args():
     parser.add_argument(
         "--pretrained_model_name_or_path",
         type=str,
-        default="models/weights/stable-diffusion-3-medium",
+        default="models/weights/stable-diffusion-3-medium-diffusers",
         help="Path to pretrained model or model identifier from huggingface.co/models.",
     )
     parser.add_argument(
