@@ -8,6 +8,7 @@ accelerate launch scripts/train_dreambooth_lora_sd3.py \
     --instance_prompt "a photo of a sks person" \
     --class_prompt "a photo of a person" \
     --mixed_precision bf16 \
+    --num_train_epochs 50 \
     --resolution 1024
 
 accelerate launch scripts/train_dreambooth_lora_sd3.py \
@@ -17,6 +18,7 @@ accelerate launch scripts/train_dreambooth_lora_sd3.py \
     --instance_prompt "a photo of a sks person" \
     --class_prompt "a photo of a person" \
     --mixed_precision bf16 \
+    --num_train_epochs 50 \
     --resolution 1024
 
 accelerate launch scripts/train_dreambooth_lora_sd3.py \
@@ -26,6 +28,7 @@ accelerate launch scripts/train_dreambooth_lora_sd3.py \
     --instance_prompt "a photo of a sks person" \
     --class_prompt "a photo of a person" \
     --mixed_precision bf16 \
+    --num_train_epochs 50 \
     --resolution 1024
 
 accelerate launch scripts/train_dreambooth_lora_sd3.py \
@@ -35,6 +38,7 @@ accelerate launch scripts/train_dreambooth_lora_sd3.py \
     --instance_prompt "a photo of a sks person" \
     --class_prompt "a photo of a person" \
     --mixed_precision bf16 \
+    --num_train_epochs 50 \
     --resolution 1024
 
 accelerate launch scripts/train_dreambooth_lora_sd3.py \
@@ -44,6 +48,7 @@ accelerate launch scripts/train_dreambooth_lora_sd3.py \
     --instance_prompt "a photo of a sks person" \
     --class_prompt "a photo of a person" \
     --mixed_precision bf16 \
+    --num_train_epochs 50 \
     --resolution 1024
 
 # Second phase: Run inference
