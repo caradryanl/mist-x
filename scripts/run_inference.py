@@ -154,7 +154,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(
         "--pretrained_model_name_or_path",
         type=str,
-        default="models/weights/sd3_medium_incl_clips_t5xxlfp16.safetensors",
+        default="models/weights/stable-diffusion-3-medium-diffusers",
         help="Path to pretrained model or model identifier from huggingface.co/models.",
     )
     parser.add_argument("--prompt", "-p", type=str, required=True, help="Main prompt")

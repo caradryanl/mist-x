@@ -71,8 +71,6 @@ from diffusers.utils.torch_utils import is_compiled_module
 if is_wandb_available():
     import wandb
 
-# Will error if the minimal version of diffusers is not installed. Remove at your own risks.
-check_min_version("0.32.0.dev0")
 
 logger = get_logger(__name__)
 
@@ -250,7 +248,7 @@ def parse_args(input_args=None):
     parser.add_argument(
         "--pretrained_model_name_or_path",
         type=str,
-        default="models/weights/sd3_medium_incl_clips_t5xxlfp16.safetensors",
+        default="models/weights/stable-diffusion-3-medium-diffusers",
         help="Path to pretrained model or model identifier from huggingface.co/models.",
     )
     parser.add_argument(

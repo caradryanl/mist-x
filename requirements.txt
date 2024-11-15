@@ -19,6 +19,8 @@ wandb>=0.15.0  # optional for logging
 safetensors>=0.4.0
 invisible-watermark>=0.2.0  # required for SD3
 
+sentencepiece
+
 # Evaluation
 pytorch-ignite
 pytorch_msssim
