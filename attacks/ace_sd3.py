@@ -437,7 +437,6 @@ def pgd_attack(
 
 def train_one_step(
     transformer,
-    text_encoders,
     vae,
     noise_scheduler,
     optimizer,
@@ -637,7 +636,6 @@ def main(args):
             
             instance_loss = train_one_step(
                 pipeline.transformer,
-                pipeline.text_encoders,
                 pipeline.vae,
                 pipeline.scheduler,
                 optimizer,
@@ -656,7 +654,6 @@ def main(args):
                 
                 class_loss = train_one_step(
                     pipeline.transformer,
-                    pipeline.text_encoders,
                     pipeline.vae,
                     pipeline.scheduler,
                     optimizer,
