@@ -568,6 +568,8 @@ def main(args):
     text_encoders = [pipeline.text_encoder, pipeline.text_encoder_2, pipeline.text_encoder_3]
     tokenizers = [pipeline.tokenizer, pipeline.tokenizer_2, pipeline.tokenizer_3]
 
+    for text_encoder in text_encoders:
+        text_encoder = text_encoder.to(accelerator.device)
     instance_prompt_embeds = encode_prompt(
         text_encoders=text_encoders,
         tokenizers=tokenizers,
