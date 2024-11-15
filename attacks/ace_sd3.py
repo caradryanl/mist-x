@@ -577,7 +577,8 @@ def main(args):
         max_sequence_length=77,  # Standard max length for T5
         device=accelerator.device,
         num_images_per_prompt=1
-    ).detach()
+    )
+    instance_prompt_embeds = tuple(t.detach() for t in instance_prompt_embeds)
     if args.with_prior_preservation:
         class_prompt_embeds = encode_prompt(
             text_encoders=text_encoders,
@@ -586,7 +587,8 @@ def main(args):
             max_sequence_length=77,  # Standard max length for T5
             device=accelerator.device,
             num_images_per_prompt=1
-        ).detach()
+        )
+        class_prompt_embeds = tuple(t.detach() for t in class_prompt_embeds)
     for text_encoder in text_encoders:
         text_encoder = text_encoder.to('cpu')
     
