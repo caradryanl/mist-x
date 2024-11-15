@@ -345,6 +345,12 @@ def pgd_attack(
     num_images = len(perturbed_images)
     attacked_images = []
 
+    # Set scheduler timesteps
+    noise_scheduler.set_timesteps(
+        num_inference_steps=noise_scheduler.config.num_train_timesteps, 
+        device=device
+    )
+
     # Process in batches
     for idx in tqdm(range(0, num_images, batch_size), desc="PGD attack"):
         batch_end = min(idx + batch_size, num_images)
@@ -373,10 +379,20 @@ def pgd_attack(
 
             # Sample noise and timesteps
             noise = torch.randn_like(latents)
-            timesteps = torch.randint(0, noise_scheduler.config.num_train_timesteps, (latents.shape[0],), device=device)
+            timesteps = torch.randint(
+                0, 
+                noise_scheduler.config.num_train_timesteps, 
+                (latents.shape[0],), 
+                device=device
+            ).long()
+
+            # Get sigmas for current timesteps
+            sigmas = noise_scheduler.sigmas[timesteps].flatten()
+            while len(sigmas.shape) < len(latents.shape):
+                sigmas = sigmas.unsqueeze(-1)
             
-            # Add noise to latents
-            noisy_latents = noise_scheduler.scale_noise(latents, noise, timesteps)
+            # Add noise using flow matching formulation
+            noisy_latents = sigmas * noise + (1.0 - sigmas) * latents
             
             # Get model prediction
             model_pred = pipeline.transformer(
