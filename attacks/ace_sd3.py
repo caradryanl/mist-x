@@ -592,8 +592,7 @@ def parse_args():
     )
     parser.add_argument(
         "--prior_loss_weight",
-        type=float,
-        default=1.0,
+        action="store_true",
         help="The weight of prior preservation loss.",
     )
     parser.add_argument(
@@ -658,7 +657,7 @@ def parse_args():
     parser.add_argument(
         "--learning_rate",
         type=float,
-        default=1e-4,
+        default=1e-5,
         help="Initial learning rate (after warmup) to use.",
     )
     parser.add_argument(

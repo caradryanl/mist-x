@@ -242,9 +242,9 @@ def main():
                 guidance_scale=args.guidance_scale,
                 num_images=1
             )
-        image = outputs[0]
-        output_path = output_dir / f"{sample_idx}.png"
-        image.save(output_path)
+            image = outputs[0]
+            output_path = output_dir / f"{sample_idx}.png"
+            image.save(output_path)
     
     logger.info(f"Generated images saved to {args.output_path}")
 

@@ -4,9 +4,7 @@
 accelerate launch attacks/ace_sd3.py \
     --instance_data_dir data/celeba/121 \
     --output_dir data/outputs/celeba/ace/121 \
-    --class_data_dir data/class/celeba/ace \
     --instance_prompt "a photo of a sks person" \
-    --class_prompt "a photo of a person" \
     --mixed_precision bf16 \
     --max_train_steps 5 \
     --max_f_train_steps 5 \
@@ -15,9 +13,7 @@ accelerate launch attacks/ace_sd3.py \
 accelerate launch attacks/ace_sd3.py \
     --instance_data_dir data/celeba/1135 \
     --output_dir data/outputs/celeba/ace/1135 \
-    --class_data_dir data/class/celeba/ace \
     --instance_prompt "a photo of a sks person" \
-    --class_prompt "a photo of a person" \
     --mixed_precision bf16 \
     --max_train_steps 5 \
     --max_f_train_steps 5 \
@@ -26,9 +22,7 @@ accelerate launch attacks/ace_sd3.py \
 accelerate launch attacks/ace_sd3.py \
     --instance_data_dir data/celeba/1422 \
     --output_dir data/outputs/celeba/ace/1422 \
-    --class_data_dir data/class/celeba/ace \
     --instance_prompt "a photo of a sks person" \
-    --class_prompt "a photo of a person" \
     --mixed_precision bf16 \
     --max_train_steps 5 \
     --max_f_train_steps 5 \
@@ -37,9 +31,7 @@ accelerate launch attacks/ace_sd3.py \
 accelerate launch attacks/ace_sd3.py \
     --instance_data_dir data/celeba/1499 \
     --output_dir data/outputs/celeba/ace/1499 \
-    --class_data_dir data/class/celeba/ace \
     --instance_prompt "a photo of a sks person" \
-    --class_prompt "a photo of a person" \
     --mixed_precision bf16 \
     --max_train_steps 5 \
     --max_f_train_steps 5 \
@@ -48,9 +40,7 @@ accelerate launch attacks/ace_sd3.py \
 accelerate launch attacks/ace_sd3.py \
     --instance_data_dir data/celeba/1657 \
     --output_dir data/outputs/celeba/ace/1657 \
-    --class_data_dir data/class/celeba/ace \
     --instance_prompt "a photo of a sks person" \
-    --class_prompt "a photo of a person" \
     --mixed_precision bf16 \
     --max_train_steps 5 \
     --max_f_train_steps 5 \
@@ -60,51 +50,41 @@ accelerate launch attacks/ace_sd3.py \
 accelerate launch scripts/train_dreambooth_lora_sd3.py \
     --instance_data_dir data/outputs/celeba/ace/121 \
     --output_dir models/loras/celeba/ace/121 \
-    --class_data_dir data/class/celeba/lora \
     --instance_prompt "a photo of a sks person" \
-    --class_prompt "a photo of a person" \
     --mixed_precision bf16 \
-    --max_train_steps 1000 \
+    --max_train_steps 500 \
     --resolution 1024
 
 accelerate launch scripts/train_dreambooth_lora_sd3.py \
     --instance_data_dir data/outputs/celeba/ace/1135 \
     --output_dir models/loras/celeba/ace/1135 \
-    --class_data_dir data/class/celeba/lora \
     --instance_prompt "a photo of a sks person" \
-    --class_prompt "a photo of a person" \
     --mixed_precision bf16 \
-    --max_train_steps 1000 \
+    --max_train_steps 500 \
     --resolution 1024
 
 accelerate launch scripts/train_dreambooth_lora_sd3.py \
     --instance_data_dir data/outputs/celeba/ace/1422 \
     --output_dir models/loras/celeba/ace/1422 \
-    --class_data_dir data/class/celeba/lora \
     --instance_prompt "a photo of a sks person" \
-    --class_prompt "a photo of a person" \
     --mixed_precision bf16 \
-    --max_train_steps 1000 \
+    --max_train_steps 500 \
     --resolution 1024
 
 accelerate launch scripts/train_dreambooth_lora_sd3.py \
     --instance_data_dir data/outputs/celeba/ace/1499 \
     --output_dir models/loras/celeba/ace/1499 \
-    --class_data_dir data/class/celeba/lora \
     --instance_prompt "a photo of a sks person" \
-    --class_prompt "a photo of a person" \
     --mixed_precision bf16 \
-    --max_train_steps 1000 \
+    --max_train_steps 500 \
     --resolution 1024
 
 accelerate launch scripts/train_dreambooth_lora_sd3.py \
     --instance_data_dir data/outputs/celeba/ace/1657 \
     --output_dir models/loras/celeba/ace/1657 \
-    --class_data_dir data/class/celeba/lora \
     --instance_prompt "a photo of a sks person" \
-    --class_prompt "a photo of a person" \
     --mixed_precision bf16 \
-    --max_train_steps 1000 \
+    --max_train_steps 500 \
     --resolution 1024
 
 # Third phase: Run inference
