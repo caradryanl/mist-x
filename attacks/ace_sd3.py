@@ -475,7 +475,7 @@ def main(args):
             original_images,
             instance_prompt_embeds,
             target_latents,
-            num_steps=5,  # Only one PGD step per epoch
+            num_steps=50,  # Only one PGD step per epoch
             device=accelerator.device
         )
         
@@ -676,13 +676,13 @@ def parse_args():
         "--pgd_alpha",
         type=float,
         default=2.0/255.0,
-        help="Step size for PGD attack.",
+        help="2x Step size for PGD attack.",
     )
     parser.add_argument(
         "--pgd_eps",
         type=float,
         default=8.0/255.0,
-        help="Maximum perturbation size for PGD attack.",
+        help="2x maximum perturbation size for PGD attack. (unet uses a 2x scale of images)",
     )
     parser.add_argument(
         "--mixed_precision",
