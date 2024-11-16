@@ -676,7 +676,7 @@ def parse_args():
     parser.add_argument(
         "--pgd_alpha",
         type=float,
-        default=2.0/255.0,
+        default=1.0/255.0,
         help="Step size for PGD attack.",
     )
     parser.add_argument(

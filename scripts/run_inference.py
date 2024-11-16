@@ -163,7 +163,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--negative_prompt_2", type=str, help="Second negative prompt")
     parser.add_argument("--negative_prompt_3", type=str, help="Third negative prompt")
     parser.add_argument("--num_inference_steps", type=int, default=50)
-    parser.add_argument("--strength", "-s", type=float, default=0.6)
+    parser.add_argument("--strength", "-s", type=float, default=0.3)
     parser.add_argument("--guidance_scale", type=float, default=7.5)
     parser.add_argument("--samples_per_image", "-spi", type=int, default=1)
     parser.add_argument("--lora_path", "-lp", type=str, help="Path to LoRA weights")
@@ -206,10 +206,32 @@ def main():
         input_images = get_images_from_path(args.input_path, args.resolution)
         
         for idx, image in enumerate(tqdm(input_images, desc="Processing images")):
+            for sample_idx in range(args.samples_per_image):
+                outputs = generate_images(
+                    pipe=pipe,
+                    mode="i2i",
+                    input_image=image,
+                    prompt=args.prompt,
+                    prompt_2=args.prompt_2,
+                    prompt_3=args.prompt_3,
+                    negative_prompt=args.negative_prompt,
+                    negative_prompt_2=args.negative_prompt_2,
+                    negative_prompt_3=args.negative_prompt_3,
+                    num_inference_steps=args.num_inference_steps,
+                    strength=args.strength,
+                    guidance_scale=args.guidance_scale,
+                    num_images=1
+                )
+            
+                output_image = outputs[0]
+                output_path = output_dir / f"{idx}_{sample_idx}.png"
+                output_image.save(output_path)
+                
+    else:  # t2i mode
+        for sample_idx in range(args.samples_per_image):
             outputs = generate_images(
                 pipe=pipe,
-                mode="i2i",
-                input_image=image,
+                mode="t2i",
                 prompt=args.prompt,
                 prompt_2=args.prompt_2,
                 prompt_3=args.prompt_3,
@@ -217,33 +239,12 @@ def main():
                 negative_prompt_2=args.negative_prompt_2,
                 negative_prompt_3=args.negative_prompt_3,
                 num_inference_steps=args.num_inference_steps,
-                strength=args.strength,
                 guidance_scale=args.guidance_scale,
-                num_images=args.samples_per_image
+                num_images=1
             )
-            
-            for sample_idx, output_image in enumerate(outputs):
-                output_path = output_dir / f"{idx}_{sample_idx}.png"
-                output_image.save(output_path)
-                
-    else:  # t2i mode
-        outputs = generate_images(
-            pipe=pipe,
-            mode="t2i",
-            prompt=args.prompt,
-            prompt_2=args.prompt_2,
-            prompt_3=args.prompt_3,
-            negative_prompt=args.negative_prompt,
-            negative_prompt_2=args.negative_prompt_2,
-            negative_prompt_3=args.negative_prompt_3,
-            num_inference_steps=args.num_inference_steps,
-            guidance_scale=args.guidance_scale,
-            num_images=args.samples_per_image
-        )
-        
-        for idx, image in enumerate(outputs):
-            output_path = output_dir / f"{idx}.png"
-            image.save(output_path)
+        image = outputs[0]
+        output_path = output_dir / f"{sample_idx}.png"
+        image.save(output_path)
     
     logger.info(f"Generated images saved to {args.output_path}")
 
