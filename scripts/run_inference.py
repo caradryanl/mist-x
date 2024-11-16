@@ -26,7 +26,7 @@ def get_images_from_path(path: str, resolution: int = 1024) -> List[Image.Image]
     Returns:
         List[Image.Image]: List of loaded and processed PIL images
     """
-    images = []
+    images, filenames = [], []
     if not os.path.exists(path):
         raise ValueError(f"Input path {path} does not exist")
         
@@ -45,13 +45,14 @@ def get_images_from_path(path: str, resolution: int = 1024) -> List[Image.Image]
                     new_size = (int(image.width * ratio), int(image.height * ratio))
                     image = image.resize(new_size, Image.Resampling.LANCZOS)
                     images.append(image)
+                    filenames.append(file)
                 except Exception as e:
                     logger.warning(f"Could not load image {file}: {str(e)}")
                     
     if not images:
         raise ValueError(f"No valid images found in {path}")
     
-    return images
+    return images, filenames
 
 def load_model_with_lora(
     pipeline_class: Union[StableDiffusion3Pipeline, StableDiffusion3Img2ImgPipeline],
@@ -203,7 +204,7 @@ def main():
     
     if args.mode == "i2i":
         logger.info("Loading input images...")
-        input_images = get_images_from_path(args.input_path, args.resolution)
+        input_images, filenames = get_images_from_path(args.input_path, args.resolution)
         
         for idx, image in enumerate(tqdm(input_images, desc="Processing images")):
             for sample_idx in range(args.samples_per_image):
@@ -224,7 +225,7 @@ def main():
                 )
             
                 output_image = outputs[0]
-                output_path = output_dir / f"{idx}_{sample_idx}.png"
+                output_path = output_dir / f"{filenames[idx]}_{sample_idx}.png"
                 output_image.save(output_path)
                 
     else:  # t2i mode
