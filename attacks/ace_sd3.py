@@ -441,6 +441,7 @@ def main(args):
         num_images_per_prompt=1
     )
     instance_prompt_embeds = tuple(t.detach() for t in instance_prompt_embeds)
+    class_prompt_embeds = None
     if args.with_prior_preservation:
         class_prompt_embeds = encode_prompt(
             text_encoders=text_encoders,
@@ -586,8 +587,7 @@ def parse_args():
     )
     parser.add_argument(
         "--with_prior_preservation",
-        type=bool,
-        default=True,
+        action="store_true",
         help="Flag to add prior preservation loss.",
     )
     parser.add_argument(
