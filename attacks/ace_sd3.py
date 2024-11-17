@@ -475,7 +475,7 @@ def main(args):
             original_images,
             instance_prompt_embeds,
             target_latents,
-            num_steps=50,  # Only one PGD step per epoch
+            num_steps=25,  # Only one PGD step per epoch
             device=accelerator.device
         )
         
@@ -657,7 +657,7 @@ def parse_args():
     parser.add_argument(
         "--learning_rate",
         type=float,
-        default=1e-5,
+        default=1e-4,
         help="Initial learning rate (after warmup) to use.",
     )
     parser.add_argument(
@@ -681,7 +681,7 @@ def parse_args():
     parser.add_argument(
         "--pgd_eps",
         type=float,
-        default=8.0/255.0,
+        default=16.0/255.0,
         help="2x maximum perturbation size for PGD attack. (unet uses a 2x scale of images)",
     )
     parser.add_argument(
