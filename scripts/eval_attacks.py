@@ -183,19 +183,19 @@ def main():
     if args.std_path is not None:
         std_images = get_images_from_path(args.std_path,maximum_img_num)
     if args.metric == 'CLIPI2I':
-        print(CLIPIMG_LOSS(images,std_images))
+        print(f"{args.path}, CLIPI2I: {CLIPIMG_LOSS(images,std_images)}")
     elif args.metric == 'CLIPT2I':
-        print(CLIP_LOSS(images,args.class_name))
+        print(f"{args.path}, CLIPT2I: {CLIP_LOSS(images,args.class_name)}")
     elif args.metric == 'MSSSIM':
-        print(MSSSIM_LOSS(images,std_images))
+        print(f"{args.path}, MSSSIM: {MSSSIM_LOSS(images,std_images)}")
     elif args.metric == 'SSIM':
-        print(SSIM_LOSS(images,std_images))
+        print(f"{args.path}, SSIM: {SSIM_LOSS(images,std_images)}")
     elif args.metric == 'BRISQUE':
-        print(BRISQUE_LOSS(images))
+        print(f"{args.path}, BRISQUE: {BRISQUE_LOSS(images)}")
     elif args.metric == 'ILNIQE':
-        print(ILNIQE_LOSS(images))
+        print(f"{args.path}, ILNIQE: {ILNIQE_LOSS(images)}")
     elif args.metric == 'NIQE':
-        print(NIQE_LOSS(images))
+        print(f"{args.path}, NIQE: {NIQE_LOSS(images)}")
     else:
         raise ValueError('invalid metric')
 if __name__ == '__main__':
